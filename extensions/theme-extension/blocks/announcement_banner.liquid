@@ -1,0 +1,32 @@
+{% if shop.metafields.my_app.announcement != blank %}
+  <div style="background-color: {{ block.settings.bg_color }}; color: {{ block.settings.text_color }}; text-align: center; padding: 12px; font-weight: bold; position: fixed; top: 0; width: 100%; z-index: 99999;">
+    {{ shop.metafields.my_app.announcement }}
+  </div>
+
+  <style>
+    body {
+      padding-top: 45px;
+    }
+  </style>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Announcement Banner",
+  "target": "body",
+  "settings": [
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#45C0B6"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#ffffff"
+    }
+  ]
+}
+{% endschema %}
