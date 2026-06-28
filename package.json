@@ -9,8 +9,7 @@
     "dev": "shopify app dev",
     "info": "shopify app info",
     "generate": "shopify app generate",
-    "deploy": "shopify app deploy",
-    "vercel-build": "cd web/frontend && npm install && npm run build"
+    "deploy": "shopify app deploy"
   },
   "dependencies": {},
   "author": "mahatolalit",

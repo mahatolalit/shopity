@@ -3,6 +3,7 @@ import { dirname, join } from 'path';
 import { readFileSync } from "fs";
 import express from "express";
 import serveStatic from "serve-static";
+import cors from "cors";
 
 import shopify from "./shopify.js";
 import productCreator from "./product-creator.js";
@@ -29,6 +30,7 @@ const STATIC_PATH =
     : join(__dirname, "frontend");
 
 const app = express();
+app.use(cors({ origin: "*" }));
 
 // Set up Shopify authentication and webhook handling
 app.get(shopify.config.auth.path, shopify.auth.begin());
@@ -143,17 +145,19 @@ app.post("/api/products", async (_req, res) => {
 });
 
 app.use(shopify.cspHeaders());
-app.use(serveStatic(STATIC_PATH, { index: false }));
+// No longer serving static files from the backend when decoupled
+// app.use(serveStatic(STATIC_PATH, { index: false }));
 
-app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
-  return res
-    .status(200)
-    .set("Content-Type", "text/html")
-    .send(
-      readFileSync(join(STATIC_PATH, "index.html"))
-        .toString()
-        .replace("%VITE_SHOPIFY_API_KEY%", process.env.SHOPIFY_API_KEY || ""),
-    );
+app.use("/*", shopify.ensureInstalledOnShop(), async (req, res, _next) => {
+  const frontendUrl = process.env.FRONTEND_URL || "https://shopity-pi.vercel.app";
+  const url = new URL(frontendUrl);
+  
+  // Forward all query parameters (shop, host, etc.) to the frontend
+  for (const [key, value] of Object.entries(req.query)) {
+    url.searchParams.append(key, value);
+  }
+  
+  return res.redirect(url.toString());
 });
 
 if (!process.env.VERCEL) {
