@@ -152,4 +152,10 @@ app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
     );
 });
 
-app.listen(PORT);
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Backend running on port ${PORT}`);
+  });
+}
+
+export default app;
