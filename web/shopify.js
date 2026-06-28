@@ -3,7 +3,7 @@ import { shopifyApp } from "@shopify/shopify-app-express";
 import { SQLiteSessionStorage } from "@shopify/shopify-app-session-storage-sqlite";
 import { restResources } from "@shopify/shopify-api/rest/admin/2024-10";
 
-const DB_PATH = `${process.cwd()}/database.sqlite`;
+const DB_PATH = process.env.VERCEL ? "/tmp/database.sqlite" : `${process.cwd()}/database.sqlite`;
 
 // The transactions with Shopify will always be marked as test transactions, unless NODE_ENV is production.
 // See the ensureBilling helper to learn more about billing in this template.
