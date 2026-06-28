@@ -10,7 +10,7 @@
     "info": "shopify app info",
     "generate": "shopify app generate",
     "deploy": "shopify app deploy",
-    "vercel-build": "echo 'Skipping root build for Vercel, relying on vercel.json'"
+    "vercel-build": "cd web/frontend && npm install && npm run build"
   },
   "dependencies": {},
   "author": "mahatolalit",
