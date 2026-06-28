@@ -149,7 +149,7 @@ app.use(shopify.cspHeaders());
 // app.use(serveStatic(STATIC_PATH, { index: false }));
 
 app.use("/*", shopify.ensureInstalledOnShop(), async (req, res, _next) => {
-  const frontendUrl = process.env.FRONTEND_URL || "https://shopity-pi.vercel.app";
+  const frontendUrl = process.env.FRONTEND_URL || "https://shopity-frontend.vercel.app";
   const url = new URL(frontendUrl);
   
   // Forward all query parameters (shop, host, etc.) to the frontend

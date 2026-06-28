@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "00263cc972592ba89c7abcfc546aa76f"
-application_url = "https://shopity-pi.vercel.app"
+application_url = "https://shopity.onrender.com"
 embedded = true
 name = "shopity"
 
@@ -10,7 +10,7 @@ name = "shopity"
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://shopity-pi.vercel.app/api/auth/callback" ]
+redirect_urls = [ "https://shopity.onrender.com/api/auth/callback" ]
 
 [webhooks]
 api_version = "2026-07"
