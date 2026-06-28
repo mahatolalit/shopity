@@ -1,13 +1,18 @@
 {
-  "functions": {
-    "web/index.js": {
-      "includeFiles": "web/frontend/dist/**"
-    }
-  },
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/web/index.js"
+      "src": "web/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": "web/frontend/dist/**"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/web/index.js"
     }
   ]
 }
