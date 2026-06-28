@@ -7,7 +7,7 @@ name = "shopity"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products,write_metafields,read_metafields"
+scopes = "write_products"
 
 [auth]
 redirect_urls = [ "https://shopity-pi.vercel.app/api/auth/callback" ]
