@@ -18,38 +18,40 @@ The application architecture includes:
 - Shopify Admin API (GraphQL)
 - Shopify Theme App Extensions (Liquid)
 
-## Setup and Installation (Code)
+## Setup and Installation
+
+This application uses a decoupled architecture for production deployment: the React frontend is hosted on Vercel, and the Node/Express backend is hosted on Render.
 
 ### Prerequisites
-
 - Node.js installed on your system.
 - MongoDB running locally or accessible via a cloud URI.
-- A Shopify Partner Account.
-- A Shopify Development Store for testing.
+- A Shopify Partner Account & Development Store.
 
-### Steps to Run Locally
+### Running Locally
+To test the app locally using a Cloudflare tunnel:
+1. `npm install`
+2. Configure `.env` with your `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SCOPES=write_products`, and `MONGODB_URI`.
+3. Run `npm run dev` and follow the CLI prompts.
 
-1. **Install Dependencies:**
-   Navigate into the project directory and install the necessary packages.
-   ```bash
-   npm install
-   ```
+### Production Deployment (Decoupled)
 
-2. **Configure Environment Variables:**
-   Ensure your environment includes the `MONGODB_URI` pointing to your MongoDB instance (defaults to `mongodb://127.0.0.1:27017/shopify-app` if not provided).
+**1. Backend (Render)**
+- Connect the repository to Render as a Web Service.
+- Set Root Directory to `web`.
+- Build Command: `npm install`
+- Start Command: `npm run serve`
+- Environment Variables required: `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`, `SCOPES`, `MONGODB_URI`, `HOST` (your Render URL), and `FRONTEND_URL` (your Vercel URL).
 
-3. **Start the Application:**
-   Run the development server using the Shopify CLI.
-   ```bash
-   npm run dev
-   ```
-   Follow the interactive CLI prompts to link your app to your Partner account and install it on your development store.
+**2. Frontend (Vercel)**
+- Connect the repository to Vercel.
+- Set Root Directory to `web/frontend`.
+- Environment Variables required: `SHOPIFY_API_KEY` and `VITE_BACKEND_URL` (your Render URL).
+- Deploy. The configured `vercel.json` will automatically reverse-proxy API calls back to Render to bypass iframe origin blocks.
 
-4. **Deploy the Extension:**
-   Ensure the Theme App Extension is pushed to your Shopify app infrastructure.
-   ```bash
-   npm run deploy
-   ```
+**3. Shopify Config**
+Ensure your `shopify.app.toml` is synced by running `npm run deploy`:
+- `application_url`: Vercel URL
+- `redirect_urls`: Render URL + `/api/auth/callback`
 
 ## Activating the Banner (No-Code Storefront Setup)
 
