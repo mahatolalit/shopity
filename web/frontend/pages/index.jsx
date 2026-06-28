@@ -18,14 +18,10 @@ export default function HomePage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const token = await shopify.idToken();
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
-      
-      const response = await fetch(`${backendUrl}/api/announcement`, {
+      const response = await fetch("/api/announcement", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ announcementText }),
       });
