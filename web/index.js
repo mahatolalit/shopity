@@ -1,4 +1,3 @@
-// @ts-check
 import { join } from "path";
 import { readFileSync } from "fs";
 import express from "express";
@@ -7,10 +6,17 @@ import serveStatic from "serve-static";
 import shopify from "./shopify.js";
 import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
+import mongoose from "mongoose";
+import Announcement from "./models/Announcements.js";
+
+mongoose
+  .connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/shopify-app")
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 const PORT = parseInt(
   process.env.BACKEND_PORT || process.env.PORT || "3000",
-  10
+  10,
 );
 
 const STATIC_PATH =
@@ -25,19 +31,82 @@ app.get(shopify.config.auth.path, shopify.auth.begin());
 app.get(
   shopify.config.auth.callbackPath,
   shopify.auth.callback(),
-  shopify.redirectToShopifyOrAppRoot()
+  shopify.redirectToShopifyOrAppRoot(),
 );
 app.post(
   shopify.config.webhooks.path,
-  shopify.processWebhooks({ webhookHandlers: PrivacyWebhookHandlers })
+  shopify.processWebhooks({ webhookHandlers: PrivacyWebhookHandlers }),
 );
 
-// If you are adding routes outside of the /api path, remember to
-// also add a proxy rule for them in web/frontend/vite.config.js
-
+app.use(express.json());
 app.use("/api/*", shopify.validateAuthenticatedSession());
 
-app.use(express.json());
+app.post("/api/announcement", async (req, res) => {
+  try {
+    const { announcementText } = req.body;
+
+    const session = res.locals.shopify.session;
+
+    // Save to MongoDB
+    const newAnnouncement = new Announcement({
+      shop: session.shop,
+      announcementText: announcementText,
+    });
+    await newAnnouncement.save();
+
+    // Sync to Shopify Metafields
+    const graphqlClient = new shopify.api.clients.Graphql({ session });
+
+    // Get Shop ID
+    const shopRes = await graphqlClient.query({
+      data: `{ shop { id } }`,
+    });
+    const shopId = shopRes.body.data.shop.id;
+
+    // Upsert Metafield via GraphQL
+    const mutation = `
+      mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+        metafieldsSet(metafields: $metafields) {
+          metafields {
+            key
+            value
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+    const variables = {
+      metafields: [
+        {
+          ownerId: shopId,
+          namespace: "my_app",
+          key: "announcement",
+          type: "single_line_text_field",
+          value: announcementText,
+        },
+      ],
+    };
+
+    const response = await graphqlClient.query({
+      data: { query: mutation, variables },
+    });
+
+    if (response.body.data.metafieldsSet.userErrors.length > 0) {
+      throw new Error(response.body.data.metafieldsSet.userErrors[0].message);
+    }
+
+    res.status(200).send({
+      success: true,
+      message: "Successfully saved to Database and Shopify!",
+    });
+  } catch (error) {
+    console.error("Error saving announcement:", error);
+    res.status(500).send({ success: false, error: error.message });
+  }
+});
 
 app.get("/api/products/count", async (_req, res) => {
   const client = new shopify.api.clients.Graphql({
@@ -79,7 +148,7 @@ app.use("/*", shopify.ensureInstalledOnShop(), async (_req, res, _next) => {
     .send(
       readFileSync(join(STATIC_PATH, "index.html"))
         .toString()
-        .replace("%VITE_SHOPIFY_API_KEY%", process.env.SHOPIFY_API_KEY || "")
+        .replace("%VITE_SHOPIFY_API_KEY%", process.env.SHOPIFY_API_KEY || ""),
     );
 });
 
