@@ -1,4 +1,5 @@
-import { join } from "path";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { readFileSync } from "fs";
 import express from "express";
 import serveStatic from "serve-static";
@@ -8,6 +9,9 @@ import productCreator from "./product-creator.js";
 import PrivacyWebhookHandlers from "./privacy.js";
 import mongoose from "mongoose";
 import Announcement from "./models/Announcements.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/shopify-app")
@@ -21,8 +25,8 @@ const PORT = parseInt(
 
 const STATIC_PATH =
   process.env.NODE_ENV === "production"
-    ? join(process.cwd(), process.env.VERCEL ? "web/frontend/dist" : "frontend/dist")
-    : join(process.cwd(), process.env.VERCEL ? "web/frontend" : "frontend");
+    ? join(__dirname, "frontend/dist")
+    : join(__dirname, "frontend");
 
 const app = express();
 
